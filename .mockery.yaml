@@ -1,0 +1,9 @@
+quiet: False
+dir: mocks/{{ replaceAll .InterfaceDirRelative "internal" "internal_" }}
+disable-version-string: True
+mockname: "{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+filename: "{{.InterfaceName}}.go"
+packages:
+    github.com/arfan21/project-sprint-social-media-api/internal/domain:
+        interfaces:
