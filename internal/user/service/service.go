@@ -204,3 +204,41 @@ func (s Service) DeleteFriend(ctx context.Context, req model.FriendRequest) (err
 
 	return
 }
+
+func (s Service) GetList(ctx context.Context, req model.UserGetListRequest) (res []model.UserResponse, count int, err error) {
+	err = validation.Validate(req)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetList: failed to validate request: %w", err)
+		return
+	}
+
+	if req.Limit == 0 {
+		req.Limit = 5
+	}
+
+	resDB, err := s.repo.GetList(ctx, req)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetList: failed to get list user: %w", err)
+		return
+	}
+
+	count, err = s.repo.GetCountList(ctx, req)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetList: failed to get count list user: %w", err)
+		return
+	}
+
+	res = make([]model.UserResponse, len(resDB))
+
+	for i, v := range resDB {
+		res[i] = model.UserResponse{
+			UserID:      v.ID.String(),
+			Name:        v.Name,
+			ImageUrl:    v.ImageUrl.ValueOrZero(),
+			FriendCount: v.FriendCount,
+			CreatedAt:   v.CreatedAt.Format(constant.TimeISO8601Format),
+		}
+	}
+
+	return
+}

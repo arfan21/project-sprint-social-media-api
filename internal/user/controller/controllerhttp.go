@@ -133,3 +133,47 @@ func (ctrl ControllerHTTP) DeleteFriend(c *fiber.Ctx) error {
 		Message: "Friend deleted successfully",
 	})
 }
+
+// @Summary Get list user
+// @Description Get list user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "With the bearer started"
+// @Param limit query int false "Limit data"
+// @Param offset query int false "Offset data"
+// @Param search query string false "Search data"
+// @Param sortBy query string false "Sort by data"
+// @Param orderBy query string false "Order by data"
+// @Param onlyFriend query bool false "Only friend data"
+// @Success 200 {object} pkgutil.HTTPResponse{data=[]model.UserResponse}
+// @Failure 400 {object} pkgutil.HTTPResponse{data=[]pkgutil.ErrValidationResponse} "Error validation field"
+// @Failure 500 {object} pkgutil.HTTPResponse
+// @Router /v1/friend [get]
+func (ctrl ControllerHTTP) GetList(c *fiber.Ctx) error {
+	claims, ok := c.Locals(constant.JWTClaimsContextKey).(model.JWTClaims)
+	if !ok {
+		logger.Log(c.UserContext()).Error().Msg("cannot get claims from context")
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "invalid or expired token",
+		})
+	}
+
+	var req model.UserGetListRequest
+	err := c.QueryParser(&req)
+	exception.PanicIfNeeded(err)
+
+	req.UserID = claims.UserID
+
+	res, count, err := ctrl.svc.GetList(c.UserContext(), req)
+	exception.PanicIfNeeded(err)
+
+	return c.Status(fiber.StatusOK).JSON(pkgutil.HTTPResponse{
+		Data: res,
+		Meta: pkgutil.MetaResponse{
+			Offset: req.Offset,
+			Limit:  req.Limit,
+			Total:  count,
+		},
+	})
+}

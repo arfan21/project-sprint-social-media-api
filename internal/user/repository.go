@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/arfan21/project-sprint-social-media-api/internal/entity"
+	"github.com/arfan21/project-sprint-social-media-api/internal/model"
 	userrepo "github.com/arfan21/project-sprint-social-media-api/internal/user/repository"
 	"github.com/jackc/pgx/v5"
 )
@@ -17,4 +18,6 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (data entity.User, err error)
 	AddFriend(ctx context.Context, userIdAdder, userIdAdded string) (err error)
 	DeleteFriend(ctx context.Context, userIdAdder, userIdAdded string) (err error)
+	GetList(ctx context.Context, filter model.UserGetListRequest) (data []entity.User, err error)
+	GetCountList(ctx context.Context, filter model.UserGetListRequest) (count int, err error)
 }

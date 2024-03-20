@@ -8,14 +8,15 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID   `json:"id"`
-	Email     null.String `json:"email"`
-	Phone     null.String `json:"phone"`
-	Name      string      `json:"name"`
-	Password  string      `json:"password"`
-	ImageUrl  null.String `json:"imageUrl"`
-	CreatedAt time.Time   `json:"createdAt"`
-	UpdatedAt time.Time   `json:"updatedAt"`
+	ID          uuid.UUID   `json:"id"`
+	Email       null.String `json:"email"`
+	Phone       null.String `json:"phone"`
+	Name        string      `json:"name"`
+	Password    string      `json:"password"`
+	ImageUrl    null.String `json:"imageUrl"`
+	CreatedAt   time.Time   `json:"createdAt"`
+	UpdatedAt   time.Time   `json:"updatedAt"`
+	FriendCount int         `json:"-"`
 }
 
 func (User) TableName() string {

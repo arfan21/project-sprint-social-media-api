@@ -35,3 +35,23 @@ type FriendRequest struct {
 	UserIDAdder string `json:"-" validate:"required"`
 	UserID      string `json:"userId" validate:"required"`
 }
+
+type UserGetListRequest struct {
+	Limit         int    `query:"limit" validate:"omitempty,gte=0"`
+	Offset        int    `query:"offset" validate:"omitempty,gte=0"`
+	SortBy        string `query:"sortBy" validate:"omitempty,oneof=friendCount createdAt"`
+	OrderBy       string `query:"orderBy" validate:"omitempty,oneof=asc desc"`
+	OnlyFriend    bool   `query:"onlyFriend"`
+	Search        string `query:"search"`
+	UserID        string `query:"-"`
+	DisableOffset bool   `query:"-"`
+	DisableOrder  bool   `query:"-"`
+}
+
+type UserResponse struct {
+	UserID      string `json:"userId"`
+	Name        string `json:"name"`
+	ImageUrl    string `json:"imageUrl"`
+	FriendCount int    `json:"friendCount"`
+	CreatedAt   string `json:"createdAt"`
+}
