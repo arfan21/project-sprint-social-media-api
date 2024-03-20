@@ -3,6 +3,9 @@ package server
 import (
 	fileuploaderctrl "github.com/arfan21/project-sprint-social-media-api/internal/fileuploader/controller"
 	fileuploadersvc "github.com/arfan21/project-sprint-social-media-api/internal/fileuploader/service"
+	postctrl "github.com/arfan21/project-sprint-social-media-api/internal/post/controller"
+	postrepo "github.com/arfan21/project-sprint-social-media-api/internal/post/repository"
+	postsvc "github.com/arfan21/project-sprint-social-media-api/internal/post/service"
 	userctrl "github.com/arfan21/project-sprint-social-media-api/internal/user/controller"
 	userrepo "github.com/arfan21/project-sprint-social-media-api/internal/user/repository"
 	usersvc "github.com/arfan21/project-sprint-social-media-api/internal/user/service"
@@ -22,8 +25,13 @@ func (s *Server) Routes() {
 	fileUploaderSvc := fileuploadersvc.New()
 	fileUploaderCtrl := fileuploaderctrl.New(fileUploaderSvc)
 
+	postRepo := postrepo.New(s.db)
+	postSvc := postsvc.New(postRepo)
+	postCtrl := postctrl.New(postSvc)
+
 	s.RoutesCustomer(api, userCtrl)
 	s.RoutesFileUploader(api, fileUploaderCtrl)
+	s.RoutesPost(api, postCtrl)
 }
 
 func (s Server) RoutesCustomer(route fiber.Router, ctrl *userctrl.ControllerHTTP) {
@@ -41,4 +49,10 @@ func (s Server) RoutesFileUploader(route fiber.Router, ctrl *fileuploaderctrl.Co
 	v1 := route.Group("/v1")
 	fileUploaderV1 := v1.Group("/image", middleware.JWTAuth)
 	fileUploaderV1.Post("", ctrl.UploadImage)
+}
+
+func (s Server) RoutesPost(route fiber.Router, ctrl *postctrl.ControllerHTTP) {
+	v1 := route.Group("/v1")
+	postV1 := v1.Group("/post", middleware.JWTAuth)
+	postV1.Post("", ctrl.Create)
 }

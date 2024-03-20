@@ -7,6 +7,19 @@ definitions:
     required:
     - userId
     type: object
+  github_com_arfan21_project-sprint-social-media-api_internal_model.PostRequest:
+    properties:
+      postInHtml:
+        minLength: 3
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    required:
+    - postInHtml
+    - tags
+    type: object
   github_com_arfan21_project-sprint-social-media-api_internal_model.UserLoginRequest:
     properties:
       credentialType:
@@ -285,6 +298,48 @@ paths:
       summary: Upload Image
       tags:
       - Image Uploader
+  /v1/post:
+    post:
+      consumes:
+      - application/json
+      description: Create post
+      parameters:
+      - description: With the bearer started
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Payload post request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+        "400":
+          description: Error validation field
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.ErrValidationResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+      summary: Create post
+      tags:
+      - post
   /v1/user/login:
     post:
       consumes:
