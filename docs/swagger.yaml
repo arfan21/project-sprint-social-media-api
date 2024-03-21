@@ -7,9 +7,44 @@ definitions:
     required:
     - userId
     type: object
+  github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentRequest:
+    properties:
+      comment:
+        maxLength: 500
+        minLength: 2
+        type: string
+      postId:
+        type: string
+    required:
+    - comment
+    - postId
+    type: object
+  github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentResponse:
+    properties:
+      comment:
+        type: string
+      createdAt:
+        type: string
+      creator:
+        $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.UserResponse'
+    type: object
+  github_com_arfan21_project-sprint-social-media-api_internal_model.PostListResponse:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentResponse'
+        type: array
+      creator:
+        $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.UserResponse'
+      post:
+        $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostResponse'
+      postId:
+        type: string
+    type: object
   github_com_arfan21_project-sprint-social-media-api_internal_model.PostRequest:
     properties:
       postInHtml:
+        maxLength: 500
         minLength: 3
         type: string
       tags:
@@ -19,6 +54,17 @@ definitions:
     required:
     - postInHtml
     - tags
+    type: object
+  github_com_arfan21_project-sprint-social-media-api_internal_model.PostResponse:
+    properties:
+      createdAt:
+        type: string
+      postInHtml:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
     type: object
   github_com_arfan21_project-sprint-social-media-api_internal_model.UserLoginRequest:
     properties:
@@ -299,6 +345,53 @@ paths:
       tags:
       - Image Uploader
   /v1/post:
+    get:
+      consumes:
+      - application/json
+      description: Get list post
+      parameters:
+      - description: With the bearer started
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Limit data
+        in: query
+        name: limit
+        type: integer
+      - description: Offset data
+        in: query
+        name: offset
+        type: integer
+      - description: Search data
+        in: query
+        name: search
+        type: string
+      - description: Search tag data
+        in: query
+        name: searchTag
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostListResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+      summary: Get list post
+      tags:
+      - post
     post:
       consumes:
       - application/json
@@ -338,6 +431,48 @@ paths:
           schema:
             $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
       summary: Create post
+      tags:
+      - post
+  /v1/post/comment:
+    post:
+      consumes:
+      - application/json
+      description: Create comment
+      parameters:
+      - description: With the bearer started
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Payload post comment request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+        "400":
+          description: Error validation field
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.ErrValidationResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+      summary: Create comment
       tags:
       - post
   /v1/user/login:

@@ -164,6 +164,9 @@ func (ctrl ControllerHTTP) GetList(c *fiber.Ctx) error {
 	exception.PanicIfNeeded(err)
 
 	req.UserID = claims.UserID
+	if req.Limit == 0 {
+		req.Limit = 5
+	}
 
 	res, count, err := ctrl.svc.GetList(c.UserContext(), req)
 	exception.PanicIfNeeded(err)

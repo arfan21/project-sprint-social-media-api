@@ -20,4 +20,6 @@ type Repository interface {
 	DeleteFriend(ctx context.Context, userIdAdder, userIdAdded string) (err error)
 	GetList(ctx context.Context, filter model.UserGetListRequest) (data []entity.User, err error)
 	GetCountList(ctx context.Context, filter model.UserGetListRequest) (count int, err error)
+	IsFriend(ctx context.Context, userIdAdder, userIdAdded string) (isFriend bool, err error)
+	GetListMap(ctx context.Context, filter model.UserGetListRequest) (data map[string]entity.User, err error)
 }

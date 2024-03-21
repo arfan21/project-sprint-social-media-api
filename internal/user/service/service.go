@@ -212,10 +212,6 @@ func (s Service) GetList(ctx context.Context, req model.UserGetListRequest) (res
 		return
 	}
 
-	if req.Limit == 0 {
-		req.Limit = 5
-	}
-
 	resDB, err := s.repo.GetList(ctx, req)
 	if err != nil {
 		err = fmt.Errorf("user.service.GetList: failed to get list user: %w", err)
@@ -232,6 +228,38 @@ func (s Service) GetList(ctx context.Context, req model.UserGetListRequest) (res
 
 	for i, v := range resDB {
 		res[i] = model.UserResponse{
+			UserID:      v.ID.String(),
+			Name:        v.Name,
+			ImageUrl:    v.ImageUrl.ValueOrZero(),
+			FriendCount: v.FriendCount,
+			CreatedAt:   v.CreatedAt.Format(constant.TimeISO8601Format),
+		}
+	}
+
+	return
+}
+
+func (s Service) IsFriend(ctx context.Context, userIdAdder, userIdAdded string) (isFriend bool, err error) {
+	return s.repo.IsFriend(ctx, userIdAdder, userIdAdded)
+}
+
+func (s Service) GetListMap(ctx context.Context, req model.UserGetListRequest) (data map[string]model.UserResponse, err error) {
+	err = validation.Validate(req)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetListMap: failed to validate request: %w", err)
+		return
+	}
+
+	resDB, err := s.repo.GetListMap(ctx, req)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetListMap: failed to get list user: %w", err)
+		return
+	}
+
+	data = make(map[string]model.UserResponse)
+
+	for k, v := range resDB {
+		data[k] = model.UserResponse{
 			UserID:      v.ID.String(),
 			Name:        v.Name,
 			ImageUrl:    v.ImageUrl.ValueOrZero(),

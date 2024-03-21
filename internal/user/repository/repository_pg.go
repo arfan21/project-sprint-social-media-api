@@ -175,6 +175,11 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 
 	}
 
+	if len(filter.UserIDs) > 0 {
+		arrArgs = append(arrArgs, filter.UserIDs)
+		whereQuery += fmt.Sprintf("u.id = ANY ($%d) %s", len(arrArgs), andStatement)
+	}
+
 	if filter.OnlyFriend {
 		arrArgs = append(arrArgs, filter.UserID)
 		whereQuery += fmt.Sprintf("(fr.userIdAdder = $%d OR fr.userIdAdded = $%d) %s", len(arrArgs), len(arrArgs), andStatement)
@@ -191,16 +196,16 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 
 	query += whereQuery
 
+	if len(groupByCols) > 0 {
+		colsStr := strings.Join(groupByCols, ", ")
+		query += fmt.Sprintf("GROUP BY %s ", colsStr)
+	}
+
 	if !filter.DisableOrder {
 		sortBy := "id"
 		if filter.SortBy != "" && filter.SortBy != "createdAt" {
 			sortBy = "friendCount"
 
-		}
-
-		if len(groupByCols) > 0 {
-			colsStr := strings.Join(groupByCols, ", ")
-			query += fmt.Sprintf("GROUP BY %s ", colsStr)
 		}
 
 		query += fmt.Sprintf("ORDER BY %s ", sortBy)
@@ -270,6 +275,53 @@ func (r Repository) GetCountList(ctx context.Context, filter model.UserGetListRe
 			err = fmt.Errorf("user.repository.GetCountList: failed to scan count: %w", err)
 			return
 		}
+	}
+
+	return
+}
+
+func (r Repository) IsFriend(ctx context.Context, userIdAdder, userIdAdded string) (isFriend bool, err error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM friends
+			WHERE (userIdAdder = $1 AND userIdAdded = $2) OR (userIdAdder = $2 AND userIdAdded = $1)
+		)
+	`
+
+	err = r.db.QueryRow(ctx, query, userIdAdder, userIdAdded).Scan(&isFriend)
+	if err != nil {
+		err = fmt.Errorf("user.repository.IsFriend: failed to check is friend: %w", err)
+		return
+	}
+
+	return
+}
+
+func (r Repository) GetListMap(ctx context.Context, filter model.UserGetListRequest) (data map[string]entity.User, err error) {
+	query := `
+		SELECT u.id, u.name, u.imageurl, u.createdat, COUNT(fr.useridadder) AS friendCount
+		FROM users u
+		LEFT JOIN friends fr ON (fr.useridadder = u.id OR fr.useridadded = u.id)
+	`
+
+	rows, err := r.queryGetListWithFilter(ctx, query, []string{"u.id", "u.name", "u.imageurl", "u.createdat"}, filter)
+	if err != nil {
+		err = fmt.Errorf("user.repository.GetList: failed to get list of user: %w", err)
+		return
+	}
+
+	data = make(map[string]entity.User)
+
+	for rows.Next() {
+		var user entity.User
+		err = rows.Scan(&user.ID, &user.Name, &user.ImageUrl, &user.CreatedAt, &user.FriendCount)
+		if err != nil {
+			err = fmt.Errorf("user.repository.GetList: failed to scan user: %w", err)
+			return
+		}
+
+		data[user.ID.String()] = user
 	}
 
 	return

@@ -325,6 +325,81 @@ const docTemplate = `{
             }
         },
         "/v1/post": {
+            "get": {
+                "description": "Get list post",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "Get list post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "With the bearer started",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit data",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset data",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search data",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search tag data",
+                        "name": "searchTag",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostListResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create post",
                 "consumes": [
@@ -352,6 +427,74 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error validation field",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.ErrValidationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/post/comment": {
+            "post": {
+                "description": "Create comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "Create comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "With the bearer started",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payload post comment request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentRequest"
                         }
                     }
                 ],
@@ -551,6 +694,57 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentRequest": {
+            "type": "object",
+            "required": [
+                "comment",
+                "postId"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 2
+                },
+                "postId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.UserResponse"
+                }
+            }
+        },
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.PostListResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostCommentResponse"
+                    }
+                },
+                "creator": {
+                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.UserResponse"
+                },
+                "post": {
+                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.PostResponse"
+                },
+                "postId": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_arfan21_project-sprint-social-media-api_internal_model.PostRequest": {
             "type": "object",
             "required": [
@@ -560,7 +754,25 @@ const docTemplate = `{
             "properties": {
                 "postInHtml": {
                     "type": "string",
+                    "maxLength": 500,
                     "minLength": 3
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.PostResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "postInHtml": {
+                    "type": "string"
                 },
                 "tags": {
                     "type": "array",

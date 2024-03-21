@@ -26,7 +26,7 @@ func (s *Server) Routes() {
 	fileUploaderCtrl := fileuploaderctrl.New(fileUploaderSvc)
 
 	postRepo := postrepo.New(s.db)
-	postSvc := postsvc.New(postRepo)
+	postSvc := postsvc.New(postRepo, userSvc)
 	postCtrl := postctrl.New(postSvc)
 
 	s.RoutesCustomer(api, userCtrl)
@@ -55,4 +55,6 @@ func (s Server) RoutesPost(route fiber.Router, ctrl *postctrl.ControllerHTTP) {
 	v1 := route.Group("/v1")
 	postV1 := v1.Group("/post", middleware.JWTAuth)
 	postV1.Post("", ctrl.Create)
+	postV1.Post("/comment", ctrl.CreateComment)
+	postV1.Get("", ctrl.GetList)
 }

@@ -12,4 +12,6 @@ type Service interface {
 	AddFriend(ctx context.Context, req model.FriendRequest) (err error)
 	DeleteFriend(ctx context.Context, req model.FriendRequest) (err error)
 	GetList(ctx context.Context, req model.UserGetListRequest) (res []model.UserResponse, count int, err error)
+	IsFriend(ctx context.Context, userIdAdder, userIdAdded string) (isFriend bool, err error)
+	GetListMap(ctx context.Context, req model.UserGetListRequest) (data map[string]model.UserResponse, err error)
 }

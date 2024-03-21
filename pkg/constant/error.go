@@ -20,6 +20,8 @@ var (
 	ErrFriendUseralreadyAdded        = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user already added as friend"}
 	ErrFriendSelfDeleting            = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "cannot delete self as friend"}
 	ErrFriendUserNotAdded            = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user not found in friend list"}
+	ErrPostNotFound                  = &ErrWithCode{HTTPStatusCode: http.StatusNotFound, Message: "post not found"}
+	ErrUserNotFriend                 = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user is not friend with post owner"}
 )
 
 type ErrWithCode struct {
