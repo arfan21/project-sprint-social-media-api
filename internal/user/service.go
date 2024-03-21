@@ -16,4 +16,5 @@ type Service interface {
 	GetListMap(ctx context.Context, req model.UserGetListRequest) (data map[string]model.UserResponse, err error)
 	UpdatePhone(ctx context.Context, req model.UserPhoneUpdateRequest) (err error)
 	UpdateEmail(ctx context.Context, req model.UserEmailUpdateRequest) (err error)
+	UpdateProfile(ctx context.Context, req model.UserProfileUpdateRequest) (err error)
 }

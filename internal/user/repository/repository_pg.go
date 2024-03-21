@@ -372,3 +372,36 @@ func (r Repository) UpdateEmail(ctx context.Context, userId, email string) (err 
 
 	return
 }
+
+func (r Repository) UpdateProfile(ctx context.Context, data entity.User) (err error) {
+	query := `
+		UPDATE users
+	`
+
+	arrArgs := []interface{}{}
+	comma := ", "
+	setQuery := ""
+	arrArgs = append(arrArgs, data.Name)
+	setQuery += fmt.Sprintf("name = $%d%s", len(arrArgs), comma)
+
+	if data.ImageUrl.Valid {
+		arrArgs = append(arrArgs, data.ImageUrl)
+		setQuery += fmt.Sprintf("imageurl = $%d%s", len(arrArgs), comma)
+	}
+
+	if len(arrArgs) > 0 {
+		setQuery = "SET " + setQuery[:len(setQuery)-len(comma)] + " "
+	}
+
+	query += setQuery
+	arrArgs = append(arrArgs, data.ID)
+	query += fmt.Sprintf("WHERE id = $%d", len(arrArgs))
+	fmt.Println(query)
+	_, err = r.db.Exec(ctx, query, arrArgs...)
+	if err != nil {
+		err = fmt.Errorf("user.repository.UpdateProfile: failed to update profile: %w", err)
+		return
+	}
+
+	return
+}

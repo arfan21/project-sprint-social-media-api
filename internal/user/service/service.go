@@ -324,3 +324,23 @@ func (s Service) UpdateEmail(ctx context.Context, req model.UserEmailUpdateReque
 
 	return
 }
+
+func (s Service) UpdateProfile(ctx context.Context, req model.UserProfileUpdateRequest) (err error) {
+	err = validation.Validate(req)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdateProfile: failed to validate request: %w", err)
+		return
+	}
+
+	err = s.repo.UpdateProfile(ctx, entity.User{
+		ID:       uuid.MustParse(req.UserID),
+		Name:     req.Name,
+		ImageUrl: null.StringFrom(req.ImageUrl),
+	})
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdateProfile: failed to update profile: %w", err)
+		return
+	}
+
+	return
+}

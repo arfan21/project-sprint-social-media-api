@@ -248,3 +248,37 @@ func (ctrl ControllerHTTP) UpdateEmail(c *fiber.Ctx) error {
 		Message: "Email updated successfully",
 	})
 }
+
+// @Summary Update Profile
+// @Description Update Profile
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "With the bearer started"
+// @Param body body model.UserProfileUpdateRequest true "Payload user update profile request"
+// @Success 200 {object} pkgutil.HTTPResponse{data=model.UserResponse}
+// @Failure 400 {object} pkgutil.HTTPResponse{data=[]pkgutil.ErrValidationResponse} "Error validation field"
+// @Failure 500 {object} pkgutil.HTTPResponse
+// @Router /v1/user [patch]
+func (ctrl ControllerHTTP) UpdateProfile(c *fiber.Ctx) error {
+	claims, ok := c.Locals(constant.JWTClaimsContextKey).(model.JWTClaims)
+	if !ok {
+		logger.Log(c.UserContext()).Error().Msg("cannot get claims from context")
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "invalid or expired token",
+		})
+	}
+
+	var req model.UserProfileUpdateRequest
+	err := c.BodyParser(&req)
+	exception.PanicIfNeeded(err)
+
+	req.UserID = claims.UserID
+
+	err = ctrl.svc.UpdateProfile(c.UserContext(), req)
+	exception.PanicIfNeeded(err)
+
+	return c.Status(fiber.StatusOK).JSON(pkgutil.HTTPResponse{
+		Message: "Profile updated successfully",
+	})
+}

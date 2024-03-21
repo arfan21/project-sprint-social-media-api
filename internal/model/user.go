@@ -66,3 +66,9 @@ type UserEmailUpdateRequest struct {
 	Email  string `json:"email" validate:"required,email"`
 	UserID string `json:"-" validate:"required"`
 }
+
+type UserProfileUpdateRequest struct {
+	Name     string `json:"name" validate:"required,min=5,max=50"`
+	UserID   string `json:"-" validate:"required"`
+	ImageUrl string `json:"imageUrl" validate:"required,customurl"`
+}

@@ -39,6 +39,7 @@ func (s Server) RoutesCustomer(route fiber.Router, ctrl *userctrl.ControllerHTTP
 	usersV1 := v1.Group("/user")
 	usersV1.Post("/register", ctrl.Register)
 	usersV1.Post("/login", ctrl.Login)
+	usersV1.Patch("", middleware.JWTAuth, ctrl.UpdateProfile)
 
 	friend := v1.Group("/friend", middleware.JWTAuth)
 	friend.Post("", ctrl.AddFriend)

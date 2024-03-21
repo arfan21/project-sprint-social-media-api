@@ -24,4 +24,5 @@ type Repository interface {
 	GetListMap(ctx context.Context, filter model.UserGetListRequest) (data map[string]entity.User, err error)
 	UpdatePhone(ctx context.Context, userId, phone string) (err error)
 	UpdateEmail(ctx context.Context, userId, email string) (err error)
+	UpdateProfile(ctx context.Context, data entity.User) (err error)
 }
