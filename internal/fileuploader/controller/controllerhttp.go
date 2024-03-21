@@ -25,7 +25,7 @@ func New(service fileuploader.Service) *ControllerHTTP {
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "Image file"
-// @Success 200 {object} pkgutil.HTTPResponse
+// @Success 200 {object} pkgutil.HTTPResponse{data=model.FileUploaderImageResponse}
 // @Failure 400 {object} pkgutil.HTTPResponse{data=[]pkgutil.ErrValidationResponse} "Error validation field"
 // @Failure 500 {object} pkgutil.HTTPResponse
 // @Router /v1/image [post]
@@ -48,5 +48,8 @@ func (ctrl ControllerHTTP) UploadImage(c *fiber.Ctx) error {
 	res, err := ctrl.service.UploadImage(c.UserContext(), req)
 	exception.PanicIfNeeded(err)
 
-	return c.Status(fiber.StatusOK).JSON(res)
+	return c.Status(fiber.StatusOK).JSON(pkgutil.HTTPResponse{
+		Message: "Image uploaded successfully",
+		Data:    res,
+	})
 }

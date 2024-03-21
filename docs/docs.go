@@ -291,7 +291,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.FileUploaderImageResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -683,6 +695,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.FileUploaderImageResponse": {
+            "type": "object",
+            "properties": {
+                "imageUrl": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_arfan21_project-sprint-social-media-api_internal_model.FriendRequest": {
             "type": "object",
             "required": [

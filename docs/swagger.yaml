@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  github_com_arfan21_project-sprint-social-media-api_internal_model.FileUploaderImageResponse:
+    properties:
+      imageUrl:
+        type: string
+    type: object
   github_com_arfan21_project-sprint-social-media-api_internal_model.FriendRequest:
     properties:
       userId:
@@ -325,7 +330,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.FileUploaderImageResponse'
+              type: object
         "400":
           description: Error validation field
           schema:
