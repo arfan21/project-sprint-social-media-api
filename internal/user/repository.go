@@ -22,4 +22,6 @@ type Repository interface {
 	GetCountList(ctx context.Context, filter model.UserGetListRequest) (count int, err error)
 	IsFriend(ctx context.Context, userIdAdder, userIdAdded string) (isFriend bool, err error)
 	GetListMap(ctx context.Context, filter model.UserGetListRequest) (data map[string]entity.User, err error)
+	UpdatePhone(ctx context.Context, userId, phone string) (err error)
+	UpdateEmail(ctx context.Context, userId, email string) (err error)
 }

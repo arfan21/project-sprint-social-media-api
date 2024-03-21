@@ -547,6 +547,142 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/user/link/email": {
+            "post": {
+                "description": "Update Email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update Email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "With the bearer started",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payload user update email request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.UserEmailUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error validation field",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.ErrValidationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/link/phone": {
+            "post": {
+                "description": "Update Phone",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update Phone",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "With the bearer started",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Payload user update phone request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_internal_model.UserPhoneUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error validation field",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.ErrValidationResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_arfan21_project-sprint-social-media-api_pkg_pkgutil.HTTPResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/login": {
             "post": {
                 "description": "Login user",
@@ -802,6 +938,17 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.UserEmailUpdateRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_arfan21_project-sprint-social-media-api_internal_model.UserLoginRequest": {
             "type": "object",
             "required": [
@@ -839,6 +986,17 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_arfan21_project-sprint-social-media-api_internal_model.UserPhoneUpdateRequest": {
+            "type": "object",
+            "required": [
+                "phone"
+            ],
+            "properties": {
                 "phone": {
                     "type": "string"
                 }

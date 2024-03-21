@@ -44,6 +44,10 @@ func (s Server) RoutesCustomer(route fiber.Router, ctrl *userctrl.ControllerHTTP
 	friend.Post("", ctrl.AddFriend)
 	friend.Delete("", ctrl.DeleteFriend)
 	friend.Get("", ctrl.GetList)
+
+	linkV1 := usersV1.Group("/link", middleware.JWTAuth)
+	linkV1.Post("/phone", ctrl.UpdatePhone)
+	linkV1.Post("/email", ctrl.UpdateEmail)
 }
 func (s Server) RoutesFileUploader(route fiber.Router, ctrl *fileuploaderctrl.ControllerHTTP) {
 	v1 := route.Group("/v1")

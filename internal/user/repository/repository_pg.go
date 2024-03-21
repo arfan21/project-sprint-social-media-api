@@ -326,3 +326,49 @@ func (r Repository) GetListMap(ctx context.Context, filter model.UserGetListRequ
 
 	return
 }
+
+func (r Repository) UpdatePhone(ctx context.Context, userId, phone string) (err error) {
+	query := `
+		UPDATE users
+		SET phone = $1
+		WHERE id = $2
+	`
+
+	_, err = r.db.Exec(ctx, query, phone, userId)
+	if err != nil {
+		var pgxError *pgconn.PgError
+		if errors.As(err, &pgxError) {
+			if pgxError.Code == constant.ErrSQLUniqueViolation {
+				err = constant.ErrPhoneAlreadyRegistered
+			}
+		}
+
+		err = fmt.Errorf("user.repository.UpdatePhone: failed to update phone: %w", err)
+		return
+	}
+
+	return
+}
+
+func (r Repository) UpdateEmail(ctx context.Context, userId, email string) (err error) {
+	query := `
+		UPDATE users
+		SET email = $1
+		WHERE id = $2
+	`
+
+	_, err = r.db.Exec(ctx, query, email, userId)
+	if err != nil {
+		var pgxError *pgconn.PgError
+		if errors.As(err, &pgxError) {
+			if pgxError.Code == constant.ErrSQLUniqueViolation {
+				err = constant.ErrEmailAlreadyRegistered
+			}
+		}
+
+		err = fmt.Errorf("user.repository.UpdateEmail: failed to update email: %w", err)
+		return
+	}
+
+	return
+}

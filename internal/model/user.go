@@ -56,3 +56,13 @@ type UserResponse struct {
 	FriendCount int    `json:"friendCount"`
 	CreatedAt   string `json:"createdAt,omitempty"`
 }
+
+type UserPhoneUpdateRequest struct {
+	Phone  string `json:"phone" validate:"required,phone"`
+	UserID string `json:"-" validate:"required"`
+}
+
+type UserEmailUpdateRequest struct {
+	Email  string `json:"email" validate:"required,email"`
+	UserID string `json:"-" validate:"required"`
+}

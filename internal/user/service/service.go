@@ -270,3 +270,57 @@ func (s Service) GetListMap(ctx context.Context, req model.UserGetListRequest) (
 
 	return
 }
+
+func (s Service) UpdatePhone(ctx context.Context, req model.UserPhoneUpdateRequest) (err error) {
+	err = validation.Validate(req)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdatePhone: failed to validate request: %w", err)
+		return
+	}
+
+	resDB, err := s.repo.GetByID(ctx, req.UserID)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdatePhone: failed to get user by id: %w", err)
+		return
+	}
+
+	if resDB.Phone.Valid {
+		err = fmt.Errorf("user.service.UpdatePhone: phone already exist, %w", constant.ErrUserAlreadyHavePhone)
+		return
+	}
+
+	err = s.repo.UpdatePhone(ctx, req.UserID, req.Phone)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdatePhone: failed to update phone: %w", err)
+		return
+	}
+
+	return
+}
+
+func (s Service) UpdateEmail(ctx context.Context, req model.UserEmailUpdateRequest) (err error) {
+	err = validation.Validate(req)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdateEmail: failed to validate request: %w", err)
+		return
+	}
+
+	resDB, err := s.repo.GetByID(ctx, req.UserID)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdateEmail: failed to get user by id: %w", err)
+		return
+	}
+
+	if resDB.Email.Valid {
+		err = fmt.Errorf("user.service.UpdateEmail: email already exist, %w", constant.ErrUserAlreadyHaveEmail)
+		return
+	}
+
+	err = s.repo.UpdateEmail(ctx, req.UserID, req.Email)
+	if err != nil {
+		err = fmt.Errorf("user.service.UpdateEmail: failed to update email: %w", err)
+		return
+	}
+
+	return
+}

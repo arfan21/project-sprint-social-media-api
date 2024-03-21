@@ -14,4 +14,6 @@ type Service interface {
 	GetList(ctx context.Context, req model.UserGetListRequest) (res []model.UserResponse, count int, err error)
 	IsFriend(ctx context.Context, userIdAdder, userIdAdded string) (isFriend bool, err error)
 	GetListMap(ctx context.Context, req model.UserGetListRequest) (data map[string]model.UserResponse, err error)
+	UpdatePhone(ctx context.Context, req model.UserPhoneUpdateRequest) (err error)
+	UpdateEmail(ctx context.Context, req model.UserEmailUpdateRequest) (err error)
 }

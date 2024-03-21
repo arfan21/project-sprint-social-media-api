@@ -22,6 +22,10 @@ var (
 	ErrFriendUserNotAdded            = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user not found in friend list"}
 	ErrPostNotFound                  = &ErrWithCode{HTTPStatusCode: http.StatusNotFound, Message: "post not found"}
 	ErrUserNotFriend                 = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user is not friend with post owner"}
+	ErrPhoneAlreadyRegistered        = &ErrWithCode{HTTPStatusCode: http.StatusConflict, Message: "phone already registered"}
+	ErrUserAlreadyHavePhone          = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user already have phone"}
+	ErrEmailAlreadyRegistered        = &ErrWithCode{HTTPStatusCode: http.StatusConflict, Message: "email already registered"}
+	ErrUserAlreadyHaveEmail          = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "user already have email"}
 )
 
 type ErrWithCode struct {

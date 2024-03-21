@@ -109,6 +109,25 @@ func Validate[T any](modelValidate T) error {
 			}
 			return true
 		})
+
+		validate.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
+			if fl.Field().Kind() == reflect.String {
+				val := fl.Field().String()
+				if val == "" {
+					return true
+				}
+
+				// minLength=7 and maxLength=13
+				var e164RegexString = "^\\+[1-9]?[0-9]{6,11}$"
+				regexpE164 := regexp.MustCompile(e164RegexString)
+				if !regexpE164.MatchString(val) {
+					return false
+				}
+
+				return true
+			}
+			return true
+		})
 	})
 
 	translatorOnce.Do(func() {
@@ -118,6 +137,7 @@ func Validate[T any](modelValidate T) error {
 
 		addTranslation("customurl", "{0} must be a valid url")
 		addTranslation("emailorphone", "{0} must be a valid phone number (with country code, ex: +62) or email")
+		addTranslation("phone", "{0} must be a valid phone number (with country code, ex: +62)")
 	})
 
 	err := validate.Struct(modelValidate)
