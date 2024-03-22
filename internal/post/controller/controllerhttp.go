@@ -7,6 +7,7 @@ import (
 	"github.com/arfan21/project-sprint-social-media-api/pkg/exception"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/pkgutil"
+	"github.com/arfan21/project-sprint-social-media-api/pkg/validation"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -108,8 +109,12 @@ func (ctrl ControllerHTTP) GetList(c *fiber.Ctx) error {
 		})
 	}
 
+	mapQuery := c.Queries()
+	err := validation.ValidateQuery(mapQuery)
+	exception.PanicIfNeeded(err)
+
 	var req model.PostGetListRequest
-	err := c.QueryParser(&req)
+	err = c.QueryParser(&req)
 	exception.PanicIfNeeded(err)
 
 	req.UserID = claims.UserID

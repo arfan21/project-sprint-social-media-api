@@ -65,6 +65,11 @@ func FiberErrorHandler(ctx *fiber.Ctx, err error) error {
 
 	}
 
+	if strings.Contains(err.Error(), "failed to decode: ") {
+		defaultRes.Code = fiber.StatusBadRequest
+		defaultRes.Message = http.StatusText(fiber.StatusBadRequest)
+	}
+
 	if errors.Is(err, pgx.ErrNoRows) {
 		defaultRes.Code = fiber.StatusNotFound
 		defaultRes.Message = "data not found"
