@@ -224,7 +224,6 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 		arrArgs = append(arrArgs, filter.Offset)
 		query += fmt.Sprintf("OFFSET $%d ", len(arrArgs))
 	}
-
 	return r.db.Query(ctx, query, arrArgs...)
 }
 

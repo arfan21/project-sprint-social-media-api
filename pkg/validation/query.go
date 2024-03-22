@@ -23,6 +23,10 @@ func ValidateQuery(queries map[string]string) error {
 		}
 	}
 
+	if len(errMap) == 0 {
+		return nil
+	}
+
 	jsonErr, err := json.Marshal(errMap)
 	if err != nil {
 		return err
