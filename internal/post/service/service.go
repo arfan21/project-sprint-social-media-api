@@ -69,16 +69,17 @@ func (s Service) CreateComment(ctx context.Context, req model.PostCommentRequest
 		err = fmt.Errorf("post.service.CreateComment: failed to get post: %w", err)
 		return
 	}
+	if req.UserID != postData.UserID.String() {
+		isFriend, err := s.userSvc.IsFriend(ctx, req.UserID, postData.UserID.String())
+		if err != nil {
+			err = fmt.Errorf("post.service.CreateComment: failed to check is friend: %w", err)
+			return err
+		}
 
-	isFriend, err := s.userSvc.IsFriend(ctx, req.UserID, postData.UserID.String())
-	if err != nil {
-		err = fmt.Errorf("post.service.CreateComment: failed to check is friend: %w", err)
-		return
-	}
-
-	if !isFriend {
-		err = fmt.Errorf("post.service.CreateComment: user is not friend with post owner, %w", constant.ErrUserNotFriend)
-		return
+		if !isFriend {
+			err = fmt.Errorf("post.service.CreateComment: user is not friend with post owner, %w", constant.ErrUserNotFriend)
+			return err
+		}
 	}
 
 	postIdUUID, err := uuid.Parse(req.PostID)
@@ -122,10 +123,21 @@ func (s Service) GetList(ctx context.Context, req model.PostGetListRequest) (res
 		return
 	}
 
-	data, userIDs, err := s.repo.GetList(ctx, req)
+	data, postIDs, userIDsUnique, err := s.repo.GetList(ctx, req)
 	if err != nil {
 		err = fmt.Errorf("post.service.GetList: failed to get list of post: %w", err)
 		return
+	}
+	commentsMap, err := s.repo.GetCommentsByPostIDsMap(ctx, postIDs, userIDsUnique)
+	if err != nil {
+		err = fmt.Errorf("post.service.GetList: failed to get comments by post ids: %w", err)
+		return
+	}
+	userIDs := make([]string, len(userIDsUnique))
+	i := 0
+	for k := range userIDsUnique {
+		userIDs[i] = k
+		i++
 	}
 
 	userMap, err := s.userSvc.GetListMap(ctx, model.UserGetListRequest{
@@ -159,14 +171,13 @@ func (s Service) GetList(ctx context.Context, req model.PostGetListRequest) (res
 			Creator: userMap[v.UserID.String()],
 		}
 
-		res[i].Comments = make([]model.PostCommentResponse, len(v.Comments))
-		for j, c := range v.Comments {
-			userRes := userMap[c.UserID.UUID.String()]
-			userRes.CreatedAt = ""
+		comments := commentsMap[v.ID.String()]
+		res[i].Comments = make([]model.PostCommentResponse, len(comments))
+		for j, comment := range comments {
 			res[i].Comments[j] = model.PostCommentResponse{
-				Comment:   c.Comment.ValueOrZero(),
-				CreatedAt: c.CreatedAt.ValueOrZero().Format(constant.TimeISO8601Format),
-				Creator:   userRes,
+				Comment:   comment.Comment,
+				CreatedAt: comment.CreatedAt.Format(constant.TimeISO8601Format),
+				Creator:   userMap[comment.UserID.String()],
 			}
 		}
 	}

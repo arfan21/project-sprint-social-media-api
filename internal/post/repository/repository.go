@@ -92,7 +92,7 @@ func (r Repository) CreateComment(ctx context.Context, data entity.PostComment) 
 
 // queryGetListWithFilter is a helper function to get post of user with filter
 // the query is expected to be joined with post_comments and friends table
-// where table posts as p, post_comments as pc, and friends as f
+// where table posts as p, and friends as f
 func (r Repository) queryGetListWithFilter(ctx context.Context, query string, filter model.PostGetListRequest) (rows pgx.Rows, err error) {
 	arrArgs := []interface{}{}
 	whereQuery := ""
@@ -131,17 +131,20 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, fi
 		arrArgs = append(arrArgs, filter.Offset)
 		query += fmt.Sprintf("OFFSET $%d ", len(arrArgs))
 	}
-
 	return r.db.Query(ctx, query, arrArgs...)
 }
 
-func (r Repository) GetList(ctx context.Context, filter model.PostGetListRequest) (res []entity.Post, userIDs []string, err error) {
+func (r Repository) GetList(ctx context.Context, filter model.PostGetListRequest) (
+	res []entity.Post,
+	postIDs []string,
+	userIdUnique map[string]struct{},
+	err error,
+) {
 	query := `
 		SELECT
-			p.id, p.userId, p.body, p.tags, p.createdAt, pc.userId as commentUserId, pc.comment, pc.createdAt as commentCreatedAt
+			DISTINCT(p.id), p.userId, p.body, p.tags, p.createdAt
 		FROM posts p
-		LEFT JOIN post_comments pc ON p.id = pc.postId
-		INNER JOIN friends f ON (p.userId = f.useridadder OR p.userId = f.useridadded)
+		LEFT JOIN friends f ON (p.userId = f.useridadder OR p.userId = f.useridadded)
 	`
 
 	rows, err := r.queryGetListWithFilter(ctx, query, filter)
@@ -150,41 +153,21 @@ func (r Repository) GetList(ctx context.Context, filter model.PostGetListRequest
 		return
 	}
 
-	postMap := make(map[string]struct{})
-	userIdUnique := make(map[string]struct{})
-	i := 0
+	postIDs = []string{}
+	userIdUnique = make(map[string]struct{})
 	for rows.Next() {
 		var post entity.Post
-		var comment entity.PostCommentNullable
 
-		err = rows.Scan(&post.ID, &post.UserID, &post.Body, &post.Tags, &post.CreatedAt, &comment.UserID, &comment.Comment, &comment.CreatedAt)
+		err = rows.Scan(&post.ID, &post.UserID, &post.Body, &post.Tags, &post.CreatedAt)
 		if err != nil {
 			err = fmt.Errorf("post.repository.GetList: failed to scan rows: %w", err)
 			return
 		}
 
-		if _, ok := postMap[post.ID.String()]; !ok {
-			userIdUnique[post.UserID.String()] = struct{}{}
-			postMap[post.ID.String()] = struct{}{}
-			res = append(res, post)
-			i = len(res) - 1
-		}
+		userIdUnique[post.UserID.String()] = struct{}{}
+		res = append(res, post)
+		postIDs = append(postIDs, post.ID.String())
 
-		currentPost := res[i]
-		if comment.UserID.Valid {
-			currentPost.Comments = append(currentPost.Comments, comment)
-			res[i] = currentPost
-
-			userIdUnique[comment.UserID.UUID.String()] = struct{}{}
-		}
-
-	}
-
-	userIDs = make([]string, len(userIdUnique))
-	i = 0
-	for k := range userIdUnique {
-		userIDs[i] = k
-		i++
 	}
 
 	return
@@ -192,10 +175,9 @@ func (r Repository) GetList(ctx context.Context, filter model.PostGetListRequest
 
 func (r Repository) GetCountList(ctx context.Context, filter model.PostGetListRequest) (count int, err error) {
 	query := `
-		SELECT COUNT(DISTINCT p.id)
+		SELECT COUNT(DISTINCT(p.id))
 		FROM posts p
-		LEFT JOIN post_comments pc ON p.id = pc.postId
-		INNER JOIN friends f ON (p.userId = f.useridadder OR p.userId = f.useridadded)
+		LEFT JOIN friends f ON (p.userId = f.useridadder OR p.userId = f.useridadded)
 	`
 	filter.DisableOffset = true
 	filter.DisableOrder = true
@@ -211,6 +193,39 @@ func (r Repository) GetCountList(ctx context.Context, filter model.PostGetListRe
 			err = fmt.Errorf("post.repository.GetCountList: failed to scan count: %w", err)
 			return
 		}
+	}
+
+	return
+}
+
+func (r Repository) GetCommentsByPostIDsMap(ctx context.Context, postIDs []string, userIDsUnique map[string]struct{}) (res map[string][]entity.PostComment, err error) {
+	query := `
+		SELECT id, postId, userId, comment, createdAt
+		FROM post_comments
+		WHERE postId = ANY($1)
+	`
+	rows, err := r.db.Query(ctx, query, postIDs)
+	if err != nil {
+		err = fmt.Errorf("post.repository.GetCommentsByPostIDsMap: failed to get comments by post ids: %w", err)
+		return
+	}
+
+	res = make(map[string][]entity.PostComment)
+	for rows.Next() {
+		var comment entity.PostComment
+
+		err = rows.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Comment, &comment.CreatedAt)
+		if err != nil {
+			err = fmt.Errorf("post.repository.GetCommentsByPostIDsMap: failed to scan rows: %w", err)
+			return
+		}
+
+		if _, ok := res[comment.PostID.String()]; !ok {
+			res[comment.PostID.String()] = []entity.PostComment{}
+		}
+
+		res[comment.PostID.String()] = append(res[comment.PostID.String()], comment)
+		userIDsUnique[comment.UserID.String()] = struct{}{}
 	}
 
 	return
