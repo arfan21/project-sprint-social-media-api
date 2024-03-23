@@ -395,7 +395,6 @@ func (r Repository) UpdateProfile(ctx context.Context, data entity.User) (err er
 	query += setQuery
 	arrArgs = append(arrArgs, data.ID)
 	query += fmt.Sprintf("WHERE id = $%d", len(arrArgs))
-	fmt.Println(query)
 	_, err = r.db.Exec(ctx, query, arrArgs...)
 	if err != nil {
 		err = fmt.Errorf("user.repository.UpdateProfile: failed to update profile: %w", err)
