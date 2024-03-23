@@ -169,7 +169,7 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 	whereQuery := ""
 	andStatement := " AND "
 
-	if filter.UserID != "" {
+	if filter.OnlyFriend && filter.UserID != "" {
 		arrArgs = append(arrArgs, filter.UserID)
 		whereQuery += fmt.Sprintf("(u.id != $%d) %s", len(arrArgs), andStatement)
 

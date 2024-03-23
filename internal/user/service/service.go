@@ -158,10 +158,10 @@ func (s Service) AddFriend(ctx context.Context, req model.FriendRequest) (err er
 		return
 	}
 
-	if req.UserID == req.UserIDAdder {
-		err = constant.ErrFriendSelfAdding
-		return
-	}
+	// if req.UserID == req.UserIDAdder {
+	// 	err = constant.ErrFriendSelfAdding
+	// 	return
+	// }
 
 	_, err = s.repo.GetByID(ctx, req.UserID)
 	if err != nil {

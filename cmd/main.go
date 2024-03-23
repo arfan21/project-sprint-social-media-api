@@ -33,6 +33,12 @@ func main() {
 			migration.Down()
 			return
 		}
+
+		if args[1] == "migrate" && args[2] == "fresh" {
+			migration.Fresh()
+			return
+
+		}
 	}
 
 	err := api.Serve()

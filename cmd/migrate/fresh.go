@@ -7,7 +7,7 @@ func Fresh() error {
 		return err
 	}
 
-	if err := migrations.Drop(); err != nil {
+	if err := migrations.Down(); err != nil {
 		return err
 	}
 
