@@ -23,11 +23,11 @@ func NewPgx() (db *pgxpool.Pool, err error) {
 	dsn := config.Get().Database.GetDSN()
 
 	if config.Get().Env == "dev" {
-		dsn += " sslmode=disable"
+		dsn += "?sslmode=disable"
 	} else {
-		dsn += " sslmode=verify-full sslrootcert=ap-southeast-1-bundle.pem"
+		dsn += "?sslmode=verify-full&sslrootcert=ap-southeast-1-bundle.pem"
 	}
-
+	fmt.Println(dsn)
 	ctx := context.Background()
 	pgConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
