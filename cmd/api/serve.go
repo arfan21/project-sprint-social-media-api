@@ -29,9 +29,9 @@ func Serve() error {
 
 		defer logShutdown(context.Background())
 
-		logger.Log(context.Background()).Info().Msg("otel logging enabled")
+		// logger.Log(context.Background()).Info().Msg("otel logging enabled")
 	} else {
-		logger.Log(context.Background()).Warn().Msg("otel logging disabled")
+		// logger.Log(context.Background()).Warn().Msg("otel logging disabled")
 	}
 
 	if config.Get().Otel.EnableTracing {
@@ -42,9 +42,9 @@ func Serve() error {
 		defer tracerShutdown(context.Background())
 
 		// this log called for initialize hook
-		logger.Log(context.Background()).Info().Msgf("otel tracing enabled with service name: %s", config.Get().Service.Name)
+		// logger.Log(context.Background()).Info().Msgf("otel tracing enabled with service name: %s", config.Get().Service.Name)
 	} else {
-		logger.Log(context.Background()).Warn().Msg("otel tracing disabled")
+		// logger.Log(context.Background()).Warn().Msg("otel tracing disabled")
 	}
 
 	if config.Get().Otel.EnableMetrics {
