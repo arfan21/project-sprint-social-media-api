@@ -212,13 +212,36 @@ func (s Service) GetList(ctx context.Context, req model.UserGetListRequest) (res
 		return
 	}
 
-	resDB, err := s.repo.GetList(ctx, req)
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetList: failed to begin transaction: %w", err)
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			errRb := tx.Rollback(ctx)
+			if errRb != nil {
+				err = fmt.Errorf("user.service.GetList: failed  to rollback: %w", errRb)
+				return
+			}
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if err != nil {
+			err = fmt.Errorf("user.service.GetList: failed  to commit: %w", err)
+			return
+		}
+	}()
+
+	resDB, err := s.repo.WithTx(tx).GetList(ctx, req)
 	if err != nil {
 		err = fmt.Errorf("user.service.GetList: failed to get list user: %w", err)
 		return
 	}
 
-	count, err = s.repo.GetCountList(ctx, req)
+	count, err = s.repo.WithTx(tx).GetCountList(ctx, req)
 	if err != nil {
 		err = fmt.Errorf("user.service.GetList: failed to get count list user: %w", err)
 		return
