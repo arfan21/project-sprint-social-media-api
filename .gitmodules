@@ -1,0 +1,3 @@
+[submodule "SocialMediaTestCases"]
+	path = SocialMediaTestCases
+	url = https://github.com/nandanugg/SocialMediaTestCases
