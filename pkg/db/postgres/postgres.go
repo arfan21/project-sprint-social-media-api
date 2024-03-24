@@ -20,7 +20,7 @@ const (
 )
 
 func NewPgx() (db *pgxpool.Pool, err error) {
-	dsn := config.Get().Database.GetDSN()
+	dsn := config.Get().Database.GetURL()
 
 	if config.Get().Env == "dev" {
 		dsn += "?sslmode=disable"

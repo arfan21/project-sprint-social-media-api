@@ -39,6 +39,11 @@ func main() {
 			return
 
 		}
+
+		if args[1] == "migrate" && args[2] == "drop" {
+			migration.Drop()
+			return
+		}
 	}
 
 	err := api.Serve()

@@ -42,3 +42,11 @@ startGrafana:
 	docker volume create grafana-storage
 	docker volume inspect grafana-storage
 	docker run -d -p 3000:3000 --name=grafana grafana/grafana-oss || docker start grafana
+
+exportEnv:
+	export ENV=prod
+	export DB_HOST=projectsprint-db.cavsdeuj9ixh.ap-southeast-1.rds.amazonaws.com
+	export DB_PORT=5432
+	export DB_USERNAME=postgres
+	export DB_PASSWORD=quiuxi9paeGh2EiS2Kiesh9euh2Ing4je
+	export DB_NAME=postgres
