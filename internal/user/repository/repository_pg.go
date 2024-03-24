@@ -229,12 +229,12 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 
 func (r Repository) GetList(ctx context.Context, filter model.UserGetListRequest) (data []entity.User, err error) {
 	query := `
-		SELECT u.id, u.name, u.imageurl, u.createdat, COUNT(fr.useridadder) AS friendCount
+		SELECT u.id, u.name, u.imageurl, u.createdat, u.friendCount
 		FROM users u
 		LEFT JOIN friends fr ON (fr.useridadder = u.id OR fr.useridadded = u.id)
 	`
 
-	rows, err := r.queryGetListWithFilter(ctx, query, []string{"u.id", "u.name", "u.imageurl", "u.createdat"}, filter)
+	rows, err := r.queryGetListWithFilter(ctx, query, []string{}, filter)
 	if err != nil {
 		err = fmt.Errorf("user.repository.GetList: failed to get list of user: %w", err)
 		return
@@ -299,12 +299,12 @@ func (r Repository) IsFriend(ctx context.Context, userIdAdder, userIdAdded strin
 
 func (r Repository) GetListMap(ctx context.Context, filter model.UserGetListRequest) (data map[string]entity.User, err error) {
 	query := `
-		SELECT u.id, u.name, u.imageurl, u.createdat, COUNT(fr.useridadder) AS friendCount
+		SELECT u.id, u.name, u.imageurl, u.createdat, u.friendCount AS friendCount
 		FROM users u
 		LEFT JOIN friends fr ON (fr.useridadder = u.id OR fr.useridadded = u.id)
 	`
 
-	rows, err := r.queryGetListWithFilter(ctx, query, []string{"u.id", "u.name", "u.imageurl", "u.createdat"}, filter)
+	rows, err := r.queryGetListWithFilter(ctx, query, []string{}, filter)
 	if err != nil {
 		err = fmt.Errorf("user.repository.GetList: failed to get list of user: %w", err)
 		return
@@ -398,6 +398,38 @@ func (r Repository) UpdateProfile(ctx context.Context, data entity.User) (err er
 	_, err = r.db.Exec(ctx, query, arrArgs...)
 	if err != nil {
 		err = fmt.Errorf("user.repository.UpdateProfile: failed to update profile: %w", err)
+		return
+	}
+
+	return
+}
+
+func (r Repository) IncrementFriendCount(ctx context.Context, userId string) (err error) {
+	query := `
+		UPDATE users
+		SET friendcount = friendcount + 1
+		WHERE id = $1
+	`
+
+	_, err = r.db.Exec(ctx, query, userId)
+	if err != nil {
+		err = fmt.Errorf("user.repository.IncrementFriendCount: failed to increment friend count: %w", err)
+		return
+	}
+
+	return
+}
+
+func (r Repository) DecrementFriendCount(ctx context.Context, userId string) (err error) {
+	query := `
+		UPDATE users
+		SET friendcount = friendcount - 1
+		WHERE id = $1
+	`
+
+	_, err = r.db.Exec(ctx, query, userId)
+	if err != nil {
+		err = fmt.Errorf("user.repository.DecrementFriendCount: failed to decrement friend count: %w", err)
 		return
 	}
 

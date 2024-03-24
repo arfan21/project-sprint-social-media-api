@@ -1,0 +1,11 @@
+# flyctl launch added from .gitignore
+**/logs
+**/tmp
+**/.env
+**/vendor
+**/*.pem
+
+# flyctl launch added from SocialMediaTestCases/.gitignore
+SocialMediaTestCases/**/package-lock.json
+SocialMediaTestCases/**/node_modules
+fly.toml

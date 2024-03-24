@@ -21,13 +21,12 @@ const (
 
 func NewPgx() (db *pgxpool.Pool, err error) {
 	dsn := config.Get().Database.GetURL()
-
-	if config.Get().Env == "dev" {
-		dsn += "?sslmode=disable"
-	} else {
-		dsn += "?sslmode=verify-full&sslrootcert=ap-southeast-1-bundle.pem"
-	}
-	fmt.Println(dsn)
+	dsn += "?sslmode=disable"
+	// if config.Get().Env == "dev" {
+	// 	dsn += "?sslmode=disable"
+	// } else {
+	// 	dsn += "?sslmode=verify-full&sslrootcert=ap-southeast-1-bundle.pem"
+	// }
 	ctx := context.Background()
 	pgConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {

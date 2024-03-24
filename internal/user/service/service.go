@@ -163,15 +163,50 @@ func (s Service) AddFriend(ctx context.Context, req model.FriendRequest) (err er
 	// 	return
 	// }
 
-	_, err = s.repo.GetByID(ctx, req.UserID)
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		err = fmt.Errorf("user.service.AddFriend: failed to begin transaction: %w", err)
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			errRb := tx.Rollback(ctx)
+			if errRb != nil {
+				err = fmt.Errorf("user.service.AddFriend: failed  to rollback: %w", errRb)
+				return
+			}
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if err != nil {
+			err = fmt.Errorf("user.service.AddFriend: failed  to commit: %w", err)
+			return
+		}
+	}()
+
+	_, err = s.repo.WithTx(tx).GetByID(ctx, req.UserID)
 	if err != nil {
 		err = fmt.Errorf("user.service.AddFriend: failed to get user by id: %w", err)
 		return
 	}
 
-	err = s.repo.AddFriend(ctx, req.UserIDAdder, req.UserID)
+	err = s.repo.WithTx(tx).AddFriend(ctx, req.UserIDAdder, req.UserID)
 	if err != nil {
 		err = fmt.Errorf("user.service.AddFriend: failed to add friend: %w", err)
+		return
+	}
+
+	err = s.repo.WithTx(tx).IncrementFriendCount(ctx, req.UserID)
+	if err != nil {
+		err = fmt.Errorf("user.service.AddFriend: failed to increment friend count: %w", err)
+		return
+	}
+
+	err = s.repo.WithTx(tx).IncrementFriendCount(ctx, req.UserIDAdder)
+	if err != nil {
+		err = fmt.Errorf("user.service.AddFriend: failed to increment friend count: %w", err)
 		return
 	}
 
@@ -185,23 +220,57 @@ func (s Service) DeleteFriend(ctx context.Context, req model.FriendRequest) (err
 		return
 	}
 
-	if req.UserID == req.UserIDAdder {
-		err = constant.ErrFriendSelfDeleting
+	// if req.UserID == req.UserIDAdder {
+	// 	err = constant.ErrFriendSelfDeleting
+	// 	return
+	// }
+
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		err = fmt.Errorf("user.service.AddFriend: failed to begin transaction: %w", err)
 		return
 	}
 
-	_, err = s.repo.GetByID(ctx, req.UserID)
+	defer func() {
+		if err != nil {
+			errRb := tx.Rollback(ctx)
+			if errRb != nil {
+				err = fmt.Errorf("user.service.AddFriend: failed  to rollback: %w", errRb)
+				return
+			}
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if err != nil {
+			err = fmt.Errorf("user.service.AddFriend: failed  to commit: %w", err)
+			return
+		}
+	}()
+
+	_, err = s.repo.WithTx(tx).GetByID(ctx, req.UserID)
 	if err != nil {
 		err = fmt.Errorf("user.service.DeleteFriend: failed to get user by id: %w", err)
 		return
 	}
 
-	err = s.repo.DeleteFriend(ctx, req.UserIDAdder, req.UserID)
+	err = s.repo.WithTx(tx).DeleteFriend(ctx, req.UserIDAdder, req.UserID)
 	if err != nil {
 		err = fmt.Errorf("user.service.DeleteFriend: failed to delete friend: %w", err)
 		return
 	}
 
+	err = s.repo.WithTx(tx).DecrementFriendCount(ctx, req.UserID)
+	if err != nil {
+		err = fmt.Errorf("user.service.DeleteFriend: failed to decrement friend count: %w", err)
+		return
+	}
+
+	err = s.repo.WithTx(tx).DecrementFriendCount(ctx, req.UserIDAdder)
+	if err != nil {
+		err = fmt.Errorf("user.service.DeleteFriend: failed to decrement friend count: %w", err)
+		return
+	}
 	return
 }
 

@@ -16,7 +16,7 @@ type User struct {
 	ImageUrl    null.String `json:"imageUrl"`
 	CreatedAt   time.Time   `json:"createdAt"`
 	UpdatedAt   time.Time   `json:"updatedAt"`
-	FriendCount int         `json:"-"`
+	FriendCount int         `json:"friendCount"`
 }
 
 func (User) TableName() string {
