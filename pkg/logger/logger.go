@@ -8,6 +8,8 @@ import (
 	"github.com/agoda-com/opentelemetry-go/otelzerolog"
 	otel "github.com/agoda-com/opentelemetry-logs-go"
 	"github.com/arfan21/project-sprint-social-media-api/config"
+	"github.com/gofiber/contrib/fiberzerolog"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/rs/zerolog"
 )
 
@@ -30,6 +32,10 @@ func Log(ctx context.Context) *zerolog.Logger {
 	})
 
 	newlogger := loggerInstance.With().Ctx(ctx).Logger()
+	if req_id, ok := ctx.Value(requestid.ConfigDefault.ContextKey).(string); ok {
+		newlogger = newlogger.With().Str(fiberzerolog.FieldRequestID, req_id).Logger()
+	}
+
 	return &newlogger
 }
 

@@ -19,6 +19,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -38,6 +39,7 @@ func New(
 	db *pgxpool.Pool,
 ) *Server {
 	app := fiber.New(fiber.Config{
+		Prefork:      true,
 		ErrorHandler: exception.FiberErrorHandler,
 	})
 
@@ -52,6 +54,10 @@ func New(
 	if config.Get().Otel.EnableMetrics || config.Get().Otel.EnableTracing {
 		app.Use(otelfiber.Middleware())
 		app.Use(middleware.TraceID())
+	}
+	if (!config.Get().Otel.EnableTracing && config.Get().Otel.EnableMetrics) || config.Get().Otel.EnableMetrics {
+		app.Use(requestid.New())
+		app.Use(middleware.RequestIdUser())
 	}
 
 	app.Use(fiberzerolog.New(fiberzerolog.Config{
