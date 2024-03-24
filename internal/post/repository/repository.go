@@ -10,6 +10,7 @@ import (
 	"github.com/arfan21/project-sprint-social-media-api/internal/model"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/constant"
 	dbpostgres "github.com/arfan21/project-sprint-social-media-api/pkg/db/postgres"
+	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -226,6 +227,70 @@ func (r Repository) GetCommentsByPostIDsMap(ctx context.Context, postIDs []strin
 
 		res[comment.PostID.String()] = append(res[comment.PostID.String()], comment)
 		userIDsUnique[comment.UserID.String()] = struct{}{}
+	}
+
+	return
+}
+
+func (r Repository) IncrementCount(ctx context.Context) (err error) {
+	tx, err := r.Begin(ctx)
+	if err != nil {
+		err = fmt.Errorf("post.repository.IncrementCount: failed to begin transaction: %w", err)
+		return
+	}
+
+	defer func() {
+		logger.Log(ctx).Err(err).Msg("post.repository.IncrementCount: defer rollback transaction")
+		if err != nil {
+			errRb := tx.Rollback(ctx)
+			if errRb != nil {
+				err = fmt.Errorf("post.repository.IncrementCount: failed to rollback transaction: %w", errRb)
+			}
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if err != nil {
+			err = fmt.Errorf("post.repository.IncrementCount: failed to commit transaction: %w", err)
+			return
+		}
+	}()
+
+	query := `
+		SELECT count FROM post_counter
+	`
+	var count int
+	err = tx.QueryRow(ctx, query).Scan(&count)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+
+		err = fmt.Errorf("post.repository.IncrementCount: failed to query count: %w", err)
+		return
+	}
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = nil
+		query = `
+			INSERT INTO post_counter (count)
+			VALUES (1)
+		`
+		_, err = tx.Exec(ctx, query)
+		if err != nil {
+			err = fmt.Errorf("post.repository.IncrementCount: failed to insert count: %w", err)
+			return
+		}
+
+		return
+	}
+
+	query = `
+		UPDATE post_counter
+		SET count = count + 1
+	`
+
+	_, err = tx.Exec(ctx, query)
+	if err != nil {
+		err = fmt.Errorf("post.repository.IncrementCount: failed to update count: %w", err)
+		return
 	}
 
 	return

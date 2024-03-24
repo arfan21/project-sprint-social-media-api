@@ -42,3 +42,11 @@ type PostCommentNullable struct {
 	CreatedAt null.Time     `json:"created_at"`
 	UpdatedAt null.Time     `json:"updated_at"`
 }
+
+type PostCounter struct {
+	Count int `json:"count"`
+}
+
+func (PostCounter) TableName() string {
+	return "post_counter"
+}

@@ -1,0 +1,2 @@
+CREATE TABLE
+    IF NOT EXISTS post_counter (count INT DEFAULT 0)
