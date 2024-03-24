@@ -3,6 +3,7 @@ package dbpostgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/arfan21/project-sprint-social-media-api/config"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
@@ -13,26 +14,29 @@ import (
 
 const (
 	maxOpenConnection = 100
-	connMaxLifetime   = 120
+	connMaxLifetime   = 180
 	maxIdleConns      = 30
 	connMaxIdleTime   = 20
 )
 
 func NewPgx() (db *pgxpool.Pool, err error) {
-	url := config.Get().Database.GetURL()
+	dsn := config.Get().Database.GetURL()
 
 	if config.Get().Env == "dev" {
-		url += "?sslmode=disable"
+		dsn += "?sslmode=disable"
 	} else {
-		url += "?sslmode=verify-full&sslrootcert=ap-southeast-1-bundle.pem"
+		dsn += "?sslmode=verify-full&sslrootcert=ap-southeast-1-bundle.pem"
 	}
-	fmt.Println(url)
+	fmt.Println(dsn)
 	ctx := context.Background()
-	pgConfig, err := pgxpool.ParseConfig(url)
+	pgConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		err = fmt.Errorf("failed to parse database config: %w", err)
 		return nil, err
 	}
+	pgConfig.MaxConns = maxOpenConnection
+	pgConfig.MaxConnIdleTime = connMaxIdleTime * time.Second
+	pgConfig.MaxConnLifetime = connMaxLifetime * time.Second
 
 	db, err = pgxpool.NewWithConfig(ctx, pgConfig)
 	if err != nil {

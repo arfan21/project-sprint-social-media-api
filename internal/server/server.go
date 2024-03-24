@@ -39,7 +39,6 @@ func New(
 	db *pgxpool.Pool,
 ) *Server {
 	app := fiber.New(fiber.Config{
-		Prefork:      true,
 		ErrorHandler: exception.FiberErrorHandler,
 	})
 
