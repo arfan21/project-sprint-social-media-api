@@ -62,7 +62,30 @@ func (s Service) Register(ctx context.Context, req model.UserRegisterRequest) (r
 		data.Phone = null.StringFrom(req.CredentialValue)
 	}
 
-	err = s.repo.Create(ctx, data)
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		err = fmt.Errorf("user.service.GetList: failed to begin transaction: %w", err)
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			errRb := tx.Rollback(ctx)
+			if errRb != nil {
+				err = fmt.Errorf("user.service.GetList: failed  to rollback: %w", errRb)
+				return
+			}
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if err != nil {
+			err = fmt.Errorf("user.service.GetList: failed  to commit: %w", err)
+			return
+		}
+	}()
+
+	err = s.repo.WithTx(tx).Create(ctx, data)
 	if err != nil {
 		err = fmt.Errorf("user.service.Register: failed to register user: %w", err)
 		return
@@ -281,44 +304,45 @@ func (s Service) GetList(ctx context.Context, req model.UserGetListRequest) (res
 		return
 	}
 
-	tx, err := s.repo.Begin(ctx)
-	if err != nil {
-		err = fmt.Errorf("user.service.GetList: failed to begin transaction: %w", err)
-		return
-	}
+	// tx, err := s.repo.Begin(ctx)
+	// if err != nil {
+	// 	err = fmt.Errorf("user.service.GetList: failed to begin transaction: %w", err)
+	// 	return
+	// }
 
-	defer func() {
-		if err != nil {
-			errRb := tx.Rollback(ctx)
-			if errRb != nil {
-				err = fmt.Errorf("user.service.GetList: failed  to rollback: %w", errRb)
-				return
-			}
-			return
-		}
+	// defer func() {
+	// 	if err != nil {
+	// 		errRb := tx.Rollback(ctx)
+	// 		if errRb != nil {
+	// 			err = fmt.Errorf("user.service.GetList: failed  to rollback: %w", errRb)
+	// 			return
+	// 		}
+	// 		return
+	// 	}
 
-		err = tx.Commit(ctx)
-		if err != nil {
-			err = fmt.Errorf("user.service.GetList: failed  to commit: %w", err)
-			return
-		}
-	}()
+	// 	err = tx.Commit(ctx)
+	// 	if err != nil {
+	// 		err = fmt.Errorf("user.service.GetList: failed  to commit: %w", err)
+	// 		return
+	// 	}
+	// }()
 
-	resDB, err := s.repo.WithTx(tx).GetList(ctx, req)
+	resDB, err := s.repo.GetList(ctx, req)
 	if err != nil {
 		err = fmt.Errorf("user.service.GetList: failed to get list user: %w", err)
 		return
 	}
 
-	count, err = s.repo.WithTx(tx).GetCountList(ctx, req)
-	if err != nil {
-		err = fmt.Errorf("user.service.GetList: failed to get count list user: %w", err)
-		return
-	}
+	// count, err = s.repo.WithTx(tx).GetCountList(ctx, req)
+	// if err != nil {
+	// 	err = fmt.Errorf("user.service.GetList: failed to get count list user: %w", err)
+	// 	return
+	// }
 
 	res = make([]model.UserResponse, len(resDB))
 
 	for i, v := range resDB {
+		count = v.Total
 		res[i] = model.UserResponse{
 			UserID:      v.ID.String(),
 			Name:        v.Name,

@@ -168,6 +168,7 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 	arrArgs := []interface{}{}
 	whereQuery := ""
 	andStatement := " AND "
+	joinQuery := ""
 
 	if filter.OnlyFriend && filter.UserID != "" {
 		arrArgs = append(arrArgs, filter.UserID)
@@ -181,6 +182,7 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 	}
 
 	if filter.OnlyFriend {
+		joinQuery = "LEFT JOIN friends fr ON (fr.useridadder = u.id OR fr.useridadded = u.id) "
 		arrArgs = append(arrArgs, filter.UserID)
 		whereQuery += fmt.Sprintf("(fr.userIdAdder = $%d OR fr.userIdAdded = $%d) %s", len(arrArgs), len(arrArgs), andStatement)
 	}
@@ -193,7 +195,7 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 	if lenArgs := len(arrArgs); lenArgs > 0 {
 		whereQuery = "WHERE " + whereQuery[:len(whereQuery)-len(andStatement)] + " "
 	}
-
+	query += joinQuery
 	query += whereQuery
 
 	if len(groupByCols) > 0 {
@@ -229,9 +231,8 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, gr
 
 func (r Repository) GetList(ctx context.Context, filter model.UserGetListRequest) (data []entity.User, err error) {
 	query := `
-		SELECT u.id, u.name, u.imageurl, u.createdat, u.friendCount
+		SELECT COUNT(*) OVER() AS total_count, u.id, u.name, u.imageurl, u.createdat, u.friendCount
 		FROM users u
-		LEFT JOIN friends fr ON (fr.useridadder = u.id OR fr.useridadded = u.id)
 	`
 
 	rows, err := r.queryGetListWithFilter(ctx, query, []string{}, filter)
@@ -242,7 +243,7 @@ func (r Repository) GetList(ctx context.Context, filter model.UserGetListRequest
 
 	for rows.Next() {
 		var user entity.User
-		err = rows.Scan(&user.ID, &user.Name, &user.ImageUrl, &user.CreatedAt, &user.FriendCount)
+		err = rows.Scan(&user.Total, &user.ID, &user.Name, &user.ImageUrl, &user.CreatedAt, &user.FriendCount)
 		if err != nil {
 			err = fmt.Errorf("user.repository.GetList: failed to scan user: %w", err)
 			return
@@ -258,7 +259,6 @@ func (r Repository) GetCountList(ctx context.Context, filter model.UserGetListRe
 	query := `
 		SELECT COUNT(DISTINCT u.id)
 		FROM users u
-		LEFT JOIN friends fr ON (fr.useridadder = u.id OR fr.useridadded = u.id)
 	`
 	filter.DisableOffset = true
 	filter.DisableOrder = true

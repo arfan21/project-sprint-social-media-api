@@ -9,6 +9,7 @@ import (
 
 	"github.com/arfan21/project-sprint-social-media-api/config"
 	_ "github.com/arfan21/project-sprint-social-media-api/docs"
+	dbpostgres "github.com/arfan21/project-sprint-social-media-api/pkg/db/postgres"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/exception"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/middleware"
@@ -21,7 +22,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 )
@@ -32,11 +32,11 @@ const (
 
 type Server struct {
 	app *fiber.App
-	db  *pgxpool.Pool
+	db  dbpostgres.Queryer
 }
 
 func New(
-	db *pgxpool.Pool,
+	db dbpostgres.Queryer,
 ) *Server {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: exception.FiberErrorHandler,

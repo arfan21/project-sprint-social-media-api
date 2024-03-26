@@ -9,7 +9,6 @@ import (
 	"github.com/arfan21/project-sprint-social-media-api/internal/post"
 	"github.com/arfan21/project-sprint-social-media-api/internal/user"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/constant"
-	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/validation"
 	"github.com/google/uuid"
 )
@@ -49,39 +48,9 @@ func (s Service) Create(ctx context.Context, req model.PostRequest) (err error) 
 		Tags:   req.Tags,
 	}
 
-	tx, err := s.repo.Begin(ctx)
-	if err != nil {
-		err = fmt.Errorf("post.service.Create: failed to begin transaction: %w", err)
-		return
-	}
-
-	defer func() {
-		logger.Log(ctx).Err(err).Msg("post.service.Create: defer func rollback")
-		if err != nil {
-			errRb := tx.Rollback(ctx)
-			if errRb != nil {
-				err = fmt.Errorf("post.service.Create: failed  to rollback: %w", errRb)
-				return
-			}
-			return
-		}
-
-		err = tx.Commit(ctx)
-		if err != nil {
-			err = fmt.Errorf("post.service.Create: failed  to commit: %w", err)
-			return
-		}
-	}()
-
-	err = s.repo.WithTx(tx).Create(ctx, data)
+	err = s.repo.Create(ctx, data)
 	if err != nil {
 		err = fmt.Errorf("post.service.Create: failed to create post: %w", err)
-		return
-	}
-
-	err = s.repo.WithTx(tx).IncrementCount(ctx)
-	if err != nil {
-		err = fmt.Errorf("post.service.Create: failed to increment count: %w", err)
 		return
 	}
 
@@ -182,16 +151,16 @@ func (s Service) GetList(ctx context.Context, req model.PostGetListRequest) (res
 		return
 	}
 
-	count, err = s.repo.GetCountList(ctx, req)
-	if err != nil {
-		err = fmt.Errorf("post.service.GetList: failed to get count list of post: %w", err)
-		return
-	}
+	// count, err = s.repo.GetCountList(ctx, req)
+	// if err != nil {
+	// 	err = fmt.Errorf("post.service.GetList: failed to get count list of post: %w", err)
+	// 	return
+	// }
 
 	res = make([]model.PostListResponse, len(data))
 
 	for i, v := range data {
-
+		count = v.Total
 		res[i] = model.PostListResponse{
 			PostID: v.ID.String(),
 			Post: model.PostResponse{

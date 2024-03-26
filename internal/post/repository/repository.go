@@ -10,7 +10,6 @@ import (
 	"github.com/arfan21/project-sprint-social-media-api/internal/model"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/constant"
 	dbpostgres "github.com/arfan21/project-sprint-social-media-api/pkg/db/postgres"
-	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -112,7 +111,7 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, fi
 	// only friend post or self post
 	if filter.UserID != "" {
 		arrArgs = append(arrArgs, filter.UserID)
-		whereQuery += fmt.Sprintf("(($%d IN (f.useridadder, f.useridadded) AND p.userId != $%d)  OR p.userId = $%d) %s", len(arrArgs), len(arrArgs), len(arrArgs), andStatement)
+		whereQuery += fmt.Sprintf("(f.useridadder = $%d OR f.useridadded = $%d ) %s", len(arrArgs), len(arrArgs), andStatement)
 	}
 
 	if lenArgs := len(arrArgs); lenArgs > 0 {
@@ -132,6 +131,7 @@ func (r Repository) queryGetListWithFilter(ctx context.Context, query string, fi
 		arrArgs = append(arrArgs, filter.Offset)
 		query += fmt.Sprintf("OFFSET $%d ", len(arrArgs))
 	}
+
 	return r.db.Query(ctx, query, arrArgs...)
 }
 
@@ -143,9 +143,9 @@ func (r Repository) GetList(ctx context.Context, filter model.PostGetListRequest
 ) {
 	query := `
 		SELECT
-			DISTINCT(p.id), p.userId, p.body, p.tags, p.createdAt
+			p.id, p.userId, p.body, p.tags, p.createdAt, COUNT(*) OVER() AS total_count
 		FROM posts p
-		LEFT JOIN friends f ON (p.userId = f.useridadder OR p.userId = f.useridadded)
+		LEFT JOIN friends f ON (f.useridadder = p.userId OR f.useridadded = p.userId)
 	`
 
 	rows, err := r.queryGetListWithFilter(ctx, query, filter)
@@ -159,7 +159,7 @@ func (r Repository) GetList(ctx context.Context, filter model.PostGetListRequest
 	for rows.Next() {
 		var post entity.Post
 
-		err = rows.Scan(&post.ID, &post.UserID, &post.Body, &post.Tags, &post.CreatedAt)
+		err = rows.Scan(&post.ID, &post.UserID, &post.Body, &post.Tags, &post.CreatedAt, &post.Total)
 		if err != nil {
 			err = fmt.Errorf("post.repository.GetList: failed to scan rows: %w", err)
 			return
@@ -227,70 +227,6 @@ func (r Repository) GetCommentsByPostIDsMap(ctx context.Context, postIDs []strin
 
 		res[comment.PostID.String()] = append(res[comment.PostID.String()], comment)
 		userIDsUnique[comment.UserID.String()] = struct{}{}
-	}
-
-	return
-}
-
-func (r Repository) IncrementCount(ctx context.Context) (err error) {
-	tx, err := r.Begin(ctx)
-	if err != nil {
-		err = fmt.Errorf("post.repository.IncrementCount: failed to begin transaction: %w", err)
-		return
-	}
-
-	defer func() {
-		logger.Log(ctx).Err(err).Msg("post.repository.IncrementCount: defer rollback transaction")
-		if err != nil {
-			errRb := tx.Rollback(ctx)
-			if errRb != nil {
-				err = fmt.Errorf("post.repository.IncrementCount: failed to rollback transaction: %w", errRb)
-			}
-			return
-		}
-
-		err = tx.Commit(ctx)
-		if err != nil {
-			err = fmt.Errorf("post.repository.IncrementCount: failed to commit transaction: %w", err)
-			return
-		}
-	}()
-
-	query := `
-		SELECT count FROM post_counter
-	`
-	var count int
-	err = tx.QueryRow(ctx, query).Scan(&count)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-
-		err = fmt.Errorf("post.repository.IncrementCount: failed to query count: %w", err)
-		return
-	}
-
-	if errors.Is(err, pgx.ErrNoRows) {
-		err = nil
-		query = `
-			INSERT INTO post_counter (count)
-			VALUES (1)
-		`
-		_, err = tx.Exec(ctx, query)
-		if err != nil {
-			err = fmt.Errorf("post.repository.IncrementCount: failed to insert count: %w", err)
-			return
-		}
-
-		return
-	}
-
-	query = `
-		UPDATE post_counter
-		SET count = count + 1
-	`
-
-	_, err = tx.Exec(ctx, query)
-	if err != nil {
-		err = fmt.Errorf("post.repository.IncrementCount: failed to update count: %w", err)
-		return
 	}
 
 	return

@@ -35,12 +35,13 @@ type database struct {
 	Password string `mapstructure:"DB_PASSWORD"`
 	Name     string `mapstructure:"DB_NAME"`
 	SSLMode  string `mapstructure:"DB_SSL_MODE"`
+	Params   string `mapstructure:"DB_PARAMS"`
 }
 
 func (d database) GetURL() string {
 	// return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", d.Host, d.Port, d.Username, d.Password, d.Name)
 
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", d.Username, d.Password, d.Host, d.Port, d.Name)
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?%s", d.Username, d.Password, d.Host, d.Port, d.Name, d.Params)
 }
 
 type jwt struct {

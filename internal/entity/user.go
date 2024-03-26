@@ -17,6 +17,7 @@ type User struct {
 	CreatedAt   time.Time   `json:"createdAt"`
 	UpdatedAt   time.Time   `json:"updatedAt"`
 	FriendCount int         `json:"friendCount"`
+	Total       int         `json:"total"`
 }
 
 func (User) TableName() string {

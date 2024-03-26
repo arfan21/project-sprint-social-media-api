@@ -7,6 +7,7 @@ import (
 	"github.com/agoda-com/opentelemetry-logs-go/exporters/otlp/otlplogs"
 	"github.com/agoda-com/opentelemetry-logs-go/exporters/otlp/otlplogs/otlplogsgrpc"
 	sdk "github.com/agoda-com/opentelemetry-logs-go/sdk/logs"
+	"github.com/arfan21/project-sprint-social-media-api/config"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 )
 
@@ -20,7 +21,7 @@ func InitLogs() (func(context.Context) error, error) {
 	secureOption := otlplogsgrpc.WithInsecure()
 
 	grpcClient := otlplogsgrpc.NewClient(
-		otlplogsgrpc.WithEndpoint(collectorURL),
+		otlplogsgrpc.WithEndpoint(config.Get().Otel.ExporterOTLPEndpoint),
 		secureOption,
 	)
 	exporter, err := otlplogs.NewExporter(ctx,

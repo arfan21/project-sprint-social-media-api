@@ -7,7 +7,7 @@ import (
 )
 
 func initMigration() (*migration.Migration, error) {
-	db, err := dbpostgres.NewPgx()
+	db, err := dbpostgres.NewPgxPool()
 	if err != nil {
 		return nil, err
 	}

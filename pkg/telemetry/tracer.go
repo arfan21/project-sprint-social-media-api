@@ -3,6 +3,7 @@ package telemetry
 import (
 	"context"
 
+	"github.com/arfan21/project-sprint-social-media-api/config"
 	"github.com/arfan21/project-sprint-social-media-api/pkg/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"go.opentelemetry.io/otel"
@@ -25,7 +26,7 @@ func InitTracer() (func(context.Context) error, error) {
 		context.Background(),
 		otlptracegrpc.NewClient(
 			secureOption,
-			otlptracegrpc.WithEndpoint(collectorURL),
+			otlptracegrpc.WithEndpoint(config.Get().Otel.ExporterOTLPEndpoint),
 		),
 	)
 

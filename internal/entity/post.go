@@ -15,6 +15,7 @@ type Post struct {
 	CreatedAt time.Time             `json:"created_at"`
 	UpdatedAt time.Time             `json:"updated_at"`
 	Comments  []PostCommentNullable `json:"comments"`
+	Total     int                   `json:"total"`
 }
 
 func (Post) TableName() string {

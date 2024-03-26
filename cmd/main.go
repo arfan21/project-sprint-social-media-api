@@ -20,7 +20,6 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
-
 	args := os.Args
 
 	if len(args) > 2 {

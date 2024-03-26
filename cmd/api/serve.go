@@ -64,7 +64,11 @@ func Serve() error {
 		logger.Log(context.Background()).Warn().Msg("otel metric disabled")
 	}
 
-	db, err := dbpostgres.NewPgx()
+	// db, err := dbpostgres.NewPgx()
+	// if err != nil {
+	// 	return err
+	// }
+	db, err := dbpostgres.NewPgxPool()
 	if err != nil {
 		return err
 	}

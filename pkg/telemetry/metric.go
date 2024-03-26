@@ -32,7 +32,7 @@ func InitMetric() (func(ctx context.Context) error, error) {
 		exporter, err := otlpmetricgrpc.New(
 			ctx,
 			secureOption,
-			otlpmetricgrpc.WithEndpoint(collectorURL),
+			otlpmetricgrpc.WithEndpoint(config.Get().Otel.ExporterOTLPEndpoint),
 		)
 
 		if err != nil {
